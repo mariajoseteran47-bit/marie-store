@@ -1,0 +1,72 @@
+:root {
+  /* Color Palette - Feminine & Elegant */
+  --primary: #d4a373; /* Muted Gold/Tan */
+  --primary-light: #faedcd; /* Creamy beige */
+  --accent: #e9edc6; /* Soft Olive/Sage */
+  --bg-color: #fefae0; /* Off-white / Cream */
+  --text-main: #283618; /* Deep Forest Green / Dark Brown */
+  --text-muted: #606c38; /* Muted Green */
+  --white: #ffffff;
+  --transition: all 0.3s ease;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  --border-radius: 12px;
+
+  /* Typography */
+  --font-serif: 'Playfair Display', serif;
+  --font-sans: 'Inter', sans-serif;
+
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  font-weight: 400;
+
+  color: var(--text-main);
+  background-color: var(--bg-color);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, .logo {
+  font-family: var(--font-serif);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: var(--transition);
+}
+
+ul {
+  list-style: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-family: var(--font-sans);
+  transition: var(--transition);
+}
+
+section {
+  padding: 80px 5%;
+}
+
+@media (max-width: 768px) {
+  section {
+    padding: 40px 5%;
+  }
+}

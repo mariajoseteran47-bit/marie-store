@@ -1,0 +1,90 @@
+.hero {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background-color: var(--primary-light);
+    padding: 0 5%;
+    position: relative;
+    overflow: hidden;
+}
+
+.heroContent {
+    max-width: 800px;
+    z-index: 2;
+}
+
+.subtitle {
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-size: 0.9rem;
+    color: var(--primary);
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.title {
+    font-size: 4rem;
+    line-height: 1.1;
+    color: var(--text-main);
+    margin-bottom: 1.5rem;
+}
+
+.title span {
+    font-style: italic;
+    color: var(--primary);
+}
+
+.description {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    margin-bottom: 2.5rem;
+}
+
+.ctaButton {
+    background: var(--primary);
+    color: white;
+    padding: 1rem 2.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 50px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 10px 30px rgba(212, 163, 115, 0.3);
+}
+
+.ctaButton:hover {
+    background: var(--text-main);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(40, 54, 24, 0.2);
+}
+
+/* Background decorative circles */
+.circle {
+    position: absolute;
+    border-radius: 50%;
+    background: white;
+    opacity: 0.4;
+    z-index: 1;
+}
+
+.circle1 {
+    width: 400px;
+    height: 400px;
+    top: -100px;
+    right: -100px;
+}
+
+.circle2 {
+    width: 300px;
+    height: 300px;
+    bottom: -50px;
+    left: -50px;
+}
+
+@media (max-width: 768px) {
+    .title {
+        font-size: 2.5rem;
+    }
+}
