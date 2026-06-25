@@ -93,15 +93,15 @@ const Cart = () => {
                             className="btn-primary" 
                             style={{ width: '100%', marginBottom: '10px', padding: '15px', borderRadius: '30px' }}
                             onClick={() => {
-                                const success = processPurchase(cartItems, { name: 'Comprador de Prueba' });
+                                const success = processPurchase(cartItems, { name: 'Cliente Web' });
                                 if (success) {
-                                    alert('¡Compra exitosa! Revisa el inventario de la encargada.');
+                                    alert('¡Tu pedido ha sido procesado con éxito! Nos pondremos en contacto contigo en breve.');
                                     clearCart();
                                     toggleCart();
                                 }
                             }}
                         >
-                            🛍️ Comprar Ahora (Test Inventario)
+                            🛍️ Confirmar Pedido
                         </button>
                         <button className={styles.checkoutBtn} onClick={checkoutWhatsApp}>
                             Preguntar por WhatsApp
