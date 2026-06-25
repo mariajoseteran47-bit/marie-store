@@ -3,12 +3,15 @@ import { Link } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 
 const AdminDashboard = () => {
-  const { inventory, orders, sales, updateInventoryItem, updateVariantStock, addVariant, removeVariant, getGlobalStock } = useStore();
+  const { inventory, orders, sales, updateInventoryItem, updateVariantStock, addVariant, removeVariant, getGlobalStock, merchandiseLog, registerIncomingMerchandise } = useStore();
   const [activeTab, setActiveTab] = useState('inventory');
   
   // States for Editing
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({ cost: 0, price: 0, discount: 0, sizes: '', colors: '', images: '', newVarSize: '', newVarColor: '' });
+  
+  // State for Merchandise Log
+  const [merchandiseForm, setMerchandiseForm] = useState({ productId: '', size: '', color: '', qty: '', cost: '', date: new Date().toISOString().split('T')[0] });
 
   // Filtro de Fechas
   const todayStr = new Date().toISOString().split('T')[0];
@@ -33,6 +36,23 @@ const AdminDashboard = () => {
     setEditingId(null);
   };
 
+  const handleRegisterMerchandise = () => {
+    if (!merchandiseForm.productId || !merchandiseForm.size || !merchandiseForm.color || !merchandiseForm.qty) {
+        alert("Por favor, completa los campos: Producto, Talla, Color y Cantidad.");
+        return;
+    }
+    registerIncomingMerchandise(
+        Number(merchandiseForm.productId), 
+        merchandiseForm.size, 
+        merchandiseForm.color, 
+        merchandiseForm.qty, 
+        merchandiseForm.cost, 
+        merchandiseForm.date
+    );
+    alert("¡Ingreso de mercadería registrado con éxito!");
+    setMerchandiseForm({...merchandiseForm, size: '', color: '', qty: '', cost: ''});
+  };
+
   // Filtrar las ventas globales según la fecha seleccionada
   const filteredSales = sales.filter(sale => sale.date === selectedDate);
   const totalVendioDia = filteredSales.reduce((acc, sale) => acc + sale.total, 0);
@@ -50,6 +70,7 @@ const AdminDashboard = () => {
       <div style={styles.sidebar}>
         <h2 style={styles.sidebarTitle}>Panel Encargada</h2>
         <button style={activeTab === 'inventory' ? styles.activeTab : styles.tab} onClick={() => setActiveTab('inventory')}>📦 Inventario</button>
+        <button style={activeTab === 'merchandise' ? styles.activeTab : styles.tab} onClick={() => setActiveTab('merchandise')}>📥 Entradas (Historial)</button>
         <button style={activeTab === 'orders' ? styles.activeTab : styles.tab} onClick={() => setActiveTab('orders')}>🛍️ Pedidos</button>
         <button style={activeTab === 'sales' ? styles.activeTab : styles.tab} onClick={() => setActiveTab('sales')}>📊 Ventas y Finanzas</button>
         <button style={activeTab === 'billing' ? styles.activeTab : styles.tab} onClick={() => setActiveTab('billing')}>🧾 Facturación</button>
@@ -62,6 +83,7 @@ const AdminDashboard = () => {
         <div style={styles.topBar}>
            <h1 style={styles.pageTitle}>
              {activeTab === 'inventory' && 'Control de Inventario (Variantes)'}
+             {activeTab === 'merchandise' && 'Registro de Entradas de Mercadería'}
              {activeTab === 'orders' && 'Pedidos de Clientes'}
              {activeTab === 'sales' && 'Ventas y Finanzas'}
              {activeTab === 'billing' && 'Facturación'}
@@ -136,7 +158,13 @@ const AdminDashboard = () => {
                             <div key={v.id} style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'5px', fontSize:'13px', borderBottom:'1px dashed #E5E7EB', paddingBottom:'4px'}}>
                               <span style={{fontWeight:'bold', width: '30px'}}>{v.size}</span>
                               <span style={{width: '90px', color: '#4B5563'}}>{v.color}</span>
-                              <span style={{width: '40px', textAlign: 'center', color: v.stock === 0 ? 'red' : 'green'}}>{v.stock} u.</span>
+                              <span style={{width: '70px', textAlign: 'center'}}>
+                                 <span style={{
+                                    padding: '3px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold',
+                                    backgroundColor: v.stock === 0 ? '#FEE2E2' : (v.stock <= 3 ? '#FEF3C7' : '#D1FAE5'),
+                                    color: v.stock === 0 ? '#DC2626' : (v.stock <= 3 ? '#D97706' : '#059669')
+                                 }}>{v.stock} u.</span>
+                              </span>
                               <div>
                                 <button style={styles.actionBtn} onClick={() => updateVariantStock(item.id, v.id, -1)}>-</button>
                                 <button style={styles.actionBtn} onClick={() => updateVariantStock(item.id, v.id, 1)}>+</button>
@@ -173,6 +201,82 @@ const AdminDashboard = () => {
                     </tr>
                   )
                 })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {activeTab === 'merchandise' && (
+          <div className="fade-in">
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '20px' }}>Registra toda la mercadería nueva que recibes de tus proveedores. Quedará guardado en el historial.</p>
+            
+            {/* Formulario de Nueva Mercadería */}
+            <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', marginBottom: '30px', borderTop: '4px solid var(--primary-color)' }}>
+                <h3 style={{ marginTop: 0, marginBottom: '20px', color: '#1F2937' }}>➕ Registrar Nuevo Ingreso</h3>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', alignItems: 'flex-end' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <label style={{ fontSize: '12px', color: '#6B7280', marginBottom: '5px' }}>Producto</label>
+                        <select 
+                            value={merchandiseForm.productId} 
+                            onChange={(e) => setMerchandiseForm({...merchandiseForm, productId: e.target.value})}
+                            style={{ padding: '8px', borderRadius: '6px', border: '1px solid #CCC', minWidth: '200px' }}
+                        >
+                            <option value="">Selecciona un producto...</option>
+                            {inventory.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
+                        </select>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <label style={{ fontSize: '12px', color: '#6B7280', marginBottom: '5px' }}>Fecha</label>
+                        <input type="date" value={merchandiseForm.date} onChange={(e) => setMerchandiseForm({...merchandiseForm, date: e.target.value})} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #CCC' }} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <label style={{ fontSize: '12px', color: '#6B7280', marginBottom: '5px' }}>Talla (Ej: M)</label>
+                        <input type="text" value={merchandiseForm.size} onChange={(e) => setMerchandiseForm({...merchandiseForm, size: e.target.value})} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #CCC', width: '80px' }} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <label style={{ fontSize: '12px', color: '#6B7280', marginBottom: '5px' }}>Color</label>
+                        <input type="text" value={merchandiseForm.color} onChange={(e) => setMerchandiseForm({...merchandiseForm, color: e.target.value})} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #CCC', width: '120px' }} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <label style={{ fontSize: '12px', color: '#6B7280', marginBottom: '5px' }}>Cant.</label>
+                        <input type="number" min="1" value={merchandiseForm.qty} onChange={(e) => setMerchandiseForm({...merchandiseForm, qty: e.target.value})} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #CCC', width: '70px' }} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <label style={{ fontSize: '12px', color: '#6B7280', marginBottom: '5px' }}>Costo Unidad ($)</label>
+                        <input type="number" min="0" value={merchandiseForm.cost} onChange={(e) => setMerchandiseForm({...merchandiseForm, cost: e.target.value})} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #CCC', width: '100px' }} />
+                    </div>
+                    <button className="btn-primary" style={{ padding: '9px 20px', borderRadius: '6px', fontWeight: 'bold' }} onClick={handleRegisterMerchandise}>
+                        Guardar Ingreso
+                    </button>
+                </div>
+            </div>
+
+            {/* Tabla de Historial */}
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>ID Ref.</th>
+                  <th style={styles.th}>Fecha</th>
+                  <th style={styles.th}>Producto</th>
+                  <th style={styles.th}>Variante (Talla/Color)</th>
+                  <th style={styles.th}>Cant. Ingresada</th>
+                  <th style={styles.th}>Costo Uni.</th>
+                  <th style={styles.th}>Inversión Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {merchandiseLog.length === 0 ? <tr><td colSpan="7" style={{textAlign: 'center', padding: '20px', color: '#888'}}>No hay registros de mercadería aún</td></tr> : null}
+                {merchandiseLog.map(log => (
+                  <tr key={log.id} style={styles.tr}>
+                    <td style={{...styles.td, fontSize: '11px', color: '#9CA3AF'}}>{log.id}</td>
+                    <td style={styles.td}><strong>{log.date}</strong></td>
+                    <td style={styles.td}>{log.productName}</td>
+                    <td style={styles.td}>{log.size} - {log.color}</td>
+                    <td style={styles.td}><span style={{ color: 'green', fontWeight: 'bold' }}>+{log.qty}</span></td>
+                    <td style={styles.td}>${log.cost.toFixed(2)}</td>
+                    <td style={styles.td}><strong>${log.total.toFixed(2)}</strong></td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

@@ -48,6 +48,10 @@ export const StoreProvider = ({ children }) => {
       const saved = localStorage.getItem('marie_sales');
       return saved ? JSON.parse(saved) : [];
   });
+  const [merchandiseLog, setMerchandiseLog] = useState(() => {
+      const saved = localStorage.getItem('marie_merchandise');
+      return saved ? JSON.parse(saved) : [];
+  });
 
   // Guardar en Local Storage cada vez que haya cambios
   useEffect(() => {
@@ -61,6 +65,10 @@ export const StoreProvider = ({ children }) => {
   useEffect(() => {
       localStorage.setItem('marie_sales', JSON.stringify(sales));
   }, [sales]);
+
+  useEffect(() => {
+      localStorage.setItem('marie_merchandise', JSON.stringify(merchandiseLog));
+  }, [merchandiseLog]);
 
   // Obtener stock global derivado de las variantes
   const getGlobalStock = (variants) => variants ? variants.reduce((acc, v) => acc + v.stock, 0) : 0;
@@ -164,6 +172,55 @@ export const StoreProvider = ({ children }) => {
       }));
   };
 
+  const registerIncomingMerchandise = (productId, size, color, qty, cost, date) => {
+      let productName = '';
+      setInventory(inventory.map(item => {
+          if (item.id === productId) {
+              productName = item.name;
+              let variants = item.variants || [];
+              let found = false;
+              
+              const updatedVariants = variants.map(v => {
+                  if (v.size === size && v.color === color) {
+                      found = true;
+                      return { ...v, stock: v.stock + Number(qty) };
+                  }
+                  return v;
+              });
+
+              if (!found) {
+                  updatedVariants.push({
+                      id: `${productId}-${size}-${color}-${Date.now()}`,
+                      size,
+                      color,
+                      stock: Number(qty)
+                  });
+              }
+
+              return {
+                  ...item,
+                  cost: Number(cost) > 0 ? Number(cost) : item.cost,
+                  variants: updatedVariants
+              };
+          }
+          return item;
+      }));
+
+      const newEntry = {
+          id: `M-${Date.now()}`,
+          date: date || new Date().toISOString().split('T')[0],
+          productName,
+          size,
+          color,
+          qty: Number(qty),
+          cost: Number(cost),
+          total: Number(qty) * Number(cost)
+      };
+
+      setMerchandiseLog([newEntry, ...merchandiseLog]);
+      return true;
+  };
+
   return (
     <StoreContext.Provider value={{ 
       inventory, 
@@ -174,7 +231,9 @@ export const StoreProvider = ({ children }) => {
       updateVariantStock,
       addVariant,
       removeVariant,
-      getGlobalStock
+      getGlobalStock,
+      merchandiseLog,
+      registerIncomingMerchandise
     }}>
       {children}
     </StoreContext.Provider>
