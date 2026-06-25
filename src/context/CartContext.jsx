@@ -8,27 +8,29 @@ export const CartProvider = ({ children }) => {
     const [cartItems, setCartItems] = useState([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
 
-    const addToCart = (product) => {
+    const addToCart = (product, selectedSize = 'U', selectedColor = 'U') => {
         setCartItems((prevItems) => {
-            const existingItem = prevItems.find((item) => item.id === product.id);
+            const cartId = `${product.id}-${selectedSize}-${selectedColor}`;
+            const existingItem = prevItems.find((item) => item.cartId === cartId);
+            
             if (existingItem) {
                 return prevItems.map((item) =>
-                    item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+                    item.cartId === cartId ? { ...item, quantity: item.quantity + 1 } : item
                 );
             }
-            return [...prevItems, { ...product, quantity: 1 }];
+            return [...prevItems, { ...product, cartId, selectedSize, selectedColor, quantity: 1 }];
         });
-        setIsCartOpen(true); // Open cart when item is added
+        setIsCartOpen(true);
     };
 
-    const removeFromCart = (id) => {
-        setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
+    const removeFromCart = (cartId) => {
+        setCartItems((prevItems) => prevItems.filter((item) => item.cartId !== cartId));
     };
 
-    const updateQuantity = (id, amount) => {
+    const updateQuantity = (cartId, amount) => {
         setCartItems((prevItems) =>
             prevItems.map((item) => {
-                if (item.id === id) {
+                if (item.cartId === cartId) {
                     const newQuantity = item.quantity + amount;
                     return { ...item, quantity: newQuantity > 0 ? newQuantity : 1 };
                 }
@@ -43,7 +45,10 @@ export const CartProvider = ({ children }) => {
 
     const toggleCart = () => setIsCartOpen(!isCartOpen);
 
-    const cartTotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+    const cartTotal = cartItems.reduce((total, item) => {
+        const finalPrice = item.discount > 0 ? item.price * (1 - item.discount / 100) : item.price;
+        return total + finalPrice * item.quantity;
+    }, 0);
     const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
     const checkoutWhatsApp = () => {
@@ -51,7 +56,7 @@ export const CartProvider = ({ children }) => {
         let message = "¡Hola Maria Store! Me gustaría realizar el siguiente pedido:\n\n";
 
         cartItems.forEach(item => {
-            message += `- ${item.name} (x${item.quantity}) - $${(item.price * item.quantity).toFixed(2)}\n`;
+            message += `- ${item.name} (${item.selectedSize}, ${item.selectedColor}) (x${item.quantity}) - $${(item.price * item.quantity).toFixed(2)}\n`;
         });
 
         message += `\n*TOTAL: $${cartTotal.toFixed(2)}*\n\n¿Me podrían confirmar disponibilidad y métodos de pago?`;

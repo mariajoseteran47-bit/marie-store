@@ -1,5 +1,6 @@
 import React from 'react';
 import { useCart } from '../context/CartContext';
+import { useStore } from '../context/StoreContext';
 import styles from '../styles/Cart.module.css';
 
 const Cart = () => {
@@ -10,8 +11,11 @@ const Cart = () => {
         updateQuantity,
         removeFromCart,
         cartTotal,
-        checkoutWhatsApp
+        checkoutWhatsApp,
+        clearCart
     } = useCart();
+    
+    const { processPurchase } = useStore();
 
     return (
         <>
@@ -30,29 +34,46 @@ const Cart = () => {
                         <p className={styles.emptyMsg}>Tu carrito está vacío.</p>
                     ) : (
                         cartItems.map((item) => (
-                            <div key={item.id} className={styles.cartItem}>
-                                <img src={item.image} alt={item.name} className={styles.itemImage} />
+                            <div key={item.cartId} className={styles.cartItem}>
+                                <img src={item.images[0]} alt={item.name} className={styles.itemImage} />
                                 <div className={styles.itemInfo}>
                                     <h4 className={styles.itemName}>{item.name}</h4>
-                                    <p className={styles.itemPrice}>${item.price.toFixed(2)}</p>
+                                    <p style={{ fontSize: '12px', color: '#6B7280', margin: '2px 0 5px 0' }}>
+                                        {item.selectedSize !== 'Unica' ? `Talla: ${item.selectedSize} | ` : ''}
+                                        {item.selectedColor !== 'Unico' ? `Color: ${item.selectedColor}` : ''}
+                                    </p>
+                                    
+                                    {item.discount > 0 ? (
+                                        <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+                                            <p className={styles.itemPrice} style={{ color: 'var(--primary-dark)', fontWeight: 'bold' }}>
+                                                ${(item.price * (1 - item.discount / 100)).toFixed(2)}
+                                            </p>
+                                            <p style={{ textDecoration: 'line-through', color: '#9CA3AF', fontSize: '12px' }}>
+                                                ${item.price.toFixed(2)}
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <p className={styles.itemPrice}>${item.price.toFixed(2)}</p>
+                                    )}
+
                                     <div className={styles.quantityControls}>
                                         <button
                                             className={styles.qtyBtn}
-                                            onClick={() => updateQuantity(item.id, -1)}
+                                            onClick={() => updateQuantity(item.cartId, -1)}
                                         >
                                             -
                                         </button>
                                         <span>{item.quantity}</span>
                                         <button
                                             className={styles.qtyBtn}
-                                            onClick={() => updateQuantity(item.id, 1)}
+                                            onClick={() => updateQuantity(item.cartId, 1)}
                                         >
                                             +
                                         </button>
                                     </div>
                                     <button
                                         className={styles.removeBtn}
-                                        onClick={() => removeFromCart(item.id)}
+                                        onClick={() => removeFromCart(item.cartId)}
                                     >
                                         Eliminar
                                     </button>
@@ -68,8 +89,22 @@ const Cart = () => {
                             <span>Subtotal</span>
                             <span>${cartTotal.toFixed(2)}</span>
                         </div>
+                        <button 
+                            className="btn-primary" 
+                            style={{ width: '100%', marginBottom: '10px', padding: '15px', borderRadius: '30px' }}
+                            onClick={() => {
+                                const success = processPurchase(cartItems, { name: 'Comprador de Prueba' });
+                                if (success) {
+                                    alert('¡Compra exitosa! Revisa el inventario de la encargada.');
+                                    clearCart();
+                                    toggleCart();
+                                }
+                            }}
+                        >
+                            🛍️ Comprar Ahora (Test Inventario)
+                        </button>
                         <button className={styles.checkoutBtn} onClick={checkoutWhatsApp}>
-                            Checkout - Finalizar Pedido
+                            Preguntar por WhatsApp
                         </button>
                     </div>
                 )}
