@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 
 const AdminDashboard = () => {
-  const { inventory, orders, sales, updateInventoryItem, updateVariantStock, addVariant, removeVariant, getGlobalStock, merchandiseLog, registerIncomingMerchandise } = useStore();
+  const { inventory, orders, sales, updateInventoryItem, updateVariantStock, addVariant, removeVariant, getGlobalStock, merchandiseLog, registerIncomingMerchandise, createProduct } = useStore();
   const [activeTab, setActiveTab] = useState('inventory');
   
   // States for Editing
@@ -12,6 +12,10 @@ const AdminDashboard = () => {
   
   // State for Merchandise Log
   const [merchandiseForm, setMerchandiseForm] = useState({ productId: '', size: '', color: '', qty: '', cost: '', date: new Date().toISOString().split('T')[0] });
+  
+  // State for Creating New Product
+  const [isCreatingProduct, setIsCreatingProduct] = useState(false);
+  const [newProductForm, setNewProductForm] = useState({ name: '', category: '', cost: '', price: '', images: '' });
 
   // Filtro de Fechas
   const todayStr = new Date().toISOString().split('T')[0];
@@ -34,6 +38,17 @@ const AdminDashboard = () => {
   const saveEdit = (id) => {
     updateInventoryItem(id, editForm.cost, editForm.price, editForm.discount, editForm.sizes, editForm.colors, editForm.images);
     setEditingId(null);
+  };
+
+  const handleCreateProduct = () => {
+    if (!newProductForm.name || !newProductForm.category || !newProductForm.cost || !newProductForm.price) {
+        alert("Por favor, completa al menos el nombre, categoría, costo y precio base.");
+        return;
+    }
+    createProduct(newProductForm.name, newProductForm.category, newProductForm.cost, newProductForm.price, newProductForm.images);
+    alert("¡Producto Creado! Ahora puedes añadirle variantes o registrar su entrada de mercadería.");
+    setNewProductForm({ name: '', category: '', cost: '', price: '', images: '' });
+    setIsCreatingProduct(false);
   };
 
   const handleRegisterMerchandise = () => {
@@ -96,6 +111,42 @@ const AdminDashboard = () => {
         {activeTab === 'inventory' && (
           <div className="fade-in">
             <p style={{ color: 'var(--text-secondary)', marginBottom: '20px' }}>Controla el stock exacto por Talla y Color.</p>
+            
+            <button className="btn-primary" style={{ marginBottom: '20px', padding: '10px 20px', fontWeight: 'bold' }} onClick={() => setIsCreatingProduct(!isCreatingProduct)}>
+                {isCreatingProduct ? '❌ Cancelar Creación' : '➕ Crear Nuevo Producto (Modelo Nuevo)'}
+            </button>
+
+            {isCreatingProduct && (
+                <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', marginBottom: '20px', borderLeft: '4px solid var(--accent-color)' }}>
+                    <h3 style={{ marginTop: 0, color: '#1F2937' }}>✨ Crear Nuevo Modelo de Ropa</h3>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', alignItems: 'flex-end' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <label style={{ fontSize: '12px', color: '#6B7280', marginBottom: '5px' }}>Nombre del Producto</label>
+                            <input type="text" placeholder="Ej: Falda Vaquera Azul" value={newProductForm.name} onChange={e=>setNewProductForm({...newProductForm, name: e.target.value})} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #CCC', width: '200px' }} />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <label style={{ fontSize: '12px', color: '#6B7280', marginBottom: '5px' }}>Categoría</label>
+                            <input type="text" placeholder="Ej: Faldas" value={newProductForm.category} onChange={e=>setNewProductForm({...newProductForm, category: e.target.value})} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #CCC', width: '150px' }} />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <label style={{ fontSize: '12px', color: '#6B7280', marginBottom: '5px' }}>Costo ($)</label>
+                            <input type="number" min="0" placeholder="0" value={newProductForm.cost} onChange={e=>setNewProductForm({...newProductForm, cost: e.target.value})} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #CCC', width: '100px' }} />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <label style={{ fontSize: '12px', color: '#6B7280', marginBottom: '5px' }}>Precio Base de Venta ($)</label>
+                            <input type="number" min="0" placeholder="0" value={newProductForm.price} onChange={e=>setNewProductForm({...newProductForm, price: e.target.value})} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #CCC', width: '150px' }} />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                            <label style={{ fontSize: '12px', color: '#6B7280', marginBottom: '5px' }}>Link de Fotografía (Opcional, separados por coma)</label>
+                            <input type="text" placeholder="https://..." value={newProductForm.images} onChange={e=>setNewProductForm({...newProductForm, images: e.target.value})} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #CCC', width: '100%' }} />
+                        </div>
+                        <button className="btn-primary" style={{ padding: '10px 20px', borderRadius: '6px', marginTop: '10px', fontWeight: 'bold' }} onClick={handleCreateProduct}>
+                            💾 Guardar Nuevo Producto
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <table style={styles.table}>
               <thead>
                 <tr>

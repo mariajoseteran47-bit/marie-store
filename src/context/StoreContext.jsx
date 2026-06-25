@@ -221,6 +221,24 @@ export const StoreProvider = ({ children }) => {
       return true;
   };
 
+  const createProduct = (name, category, cost, price, imagesStr) => {
+      const newProduct = {
+          id: Date.now(),
+          name,
+          category,
+          cost: Number(cost),
+          price: Number(price),
+          images: imagesStr ? imagesStr.split(',').map(i=>i.trim()) : [],
+          isNew: true,
+          discount: 0,
+          sizes: [],
+          colors: [],
+          variants: []
+      };
+      setInventory([newProduct, ...inventory]);
+      return newProduct.id;
+  };
+
   return (
     <StoreContext.Provider value={{ 
       inventory, 
@@ -233,7 +251,8 @@ export const StoreProvider = ({ children }) => {
       removeVariant,
       getGlobalStock,
       merchandiseLog,
-      registerIncomingMerchandise
+      registerIncomingMerchandise,
+      createProduct
     }}>
       {children}
     </StoreContext.Provider>
