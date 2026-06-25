@@ -1,20 +1,26 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import styles from '../styles/Navbar.module.css';
 
 const Navbar = () => {
   const { toggleCart, cartCount } = useCart();
+  const location = useLocation();
+  const isAdminView = location.pathname === '/admin';
 
   return (
     <nav className={styles.navbar}>
       <Link to="/" className={styles.logo}>MARIE STORE</Link>
-      <ul className={styles.navLinks}>
-        <li><Link to="/">Inicio</Link></li>
-        <li><Link to="/catalog">Catálogo</Link></li>
-        <li><Link to="/about">Nosotros</Link></li>
-        <li><Link to="/contact">Contacto</Link></li>
-      </ul>
+      
+      {!isAdminView && (
+        <ul className={styles.navLinks}>
+          <li><Link to="/">Inicio</Link></li>
+          <li><Link to="/catalog">Catálogo</Link></li>
+          <li><Link to="/about">Nosotros</Link></li>
+          <li><Link to="/contact">Contacto</Link></li>
+        </ul>
+      )}
+      
       <div className={styles.navActions}>
         <div className={styles.cartIcon} onClick={toggleCart}>
           🛒

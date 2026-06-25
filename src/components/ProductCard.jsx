@@ -18,6 +18,20 @@ const ProductCard = ({ product }) => {
             setError('Selecciona un color');
             return;
         }
+        
+        // Validar stock de la variante exacta
+        if (product.variants && product.variants.length > 0) {
+            const variant = product.variants.find(v => v.size === selectedSize && v.color === selectedColor);
+            if (!variant) {
+                setError('Combinación no disponible');
+                return;
+            }
+            if (variant.stock <= 0) {
+                setError('Agotado en esta talla y color');
+                return;
+            }
+        }
+
         setError('');
         addToCart(product, selectedSize || 'Unica', selectedColor || 'Unico');
         setSelectedSize('');
